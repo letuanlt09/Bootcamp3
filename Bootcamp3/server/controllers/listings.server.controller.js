@@ -42,7 +42,7 @@ exports.create = function(req, res) {
       res.status(400).send(err);
     } else {
       res.json(listing);
-      console.log(listing)
+      // console.log(listing)
     }
   });
 };
@@ -57,24 +57,65 @@ exports.read = function(req, res) {
 exports.update = function(req, res) {
   var listing = req.listing;
 
+  listing.name = req.body.name;
+  listing.code = req.body.code;
+  listing.address = req.body.address;
+    // check error
+
+  if(req.results)
+  {
+      listing.coordinates = {
+      latitude: req.results.lat, 
+      longitude: req.results.lng
+    };
+  }
+
+  listing.save(function(err){
+    if(err)
+       res.status(400).send(err);
+    res.json(
+      listing
+    );
+  })
+}
+
   /* Replace the listings's properties with the new properties found in req.body */
- 
+  
   /*save the coordinates (located in req.results if there is an address property) */
  
   /* Save the listing */
-
-};
 
 /* Delete a listing */
 exports.delete = function(req, res) {
   var listing = req.listing;
 
   /* Add your code to remove the listins */
-
+    Listing.findOneAndRemove({'code':listing.code},function(err){
+    if(err){
+      console.log("removeCable err");
+      throw err;
+    }
+    res.json({
+      message: 'Listing is removed',
+    })
+  });
 };
 
 /* Retreive all the directory listings, sorted alphabetically by listing code */
 exports.list = function(req, res) {
+    Listing.find(function(err,listings){
+    if(err){
+      console.log("retrieveAllListings err");
+      throw err;
+    }
+    //sort
+    listings.sort(function(a,b){
+      return a.code - b.code;
+    });
+
+
+    res.json(listings);
+  });
   /* Add your code */
 };
 
